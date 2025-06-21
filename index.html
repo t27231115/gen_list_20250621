@@ -18,7 +18,16 @@
     <label for="generation">あなたの世代:</label>
     <select id="generation">
       <option value="">選択してください</option>
-      <!-- 1900年から2024年までのオプションを動的に生成 -->
+      <option value="10代">10代</option>
+      <option value="20代">20代</option>
+      <option value="30代">30代</option>
+      <option value="40代">40代</option>
+      <option value="50代">50代</option>
+      <option value="60代">60代</option>
+      <option value="70代">70代</option>
+      <option value="80代">80代</option>
+      <option value="90代">90代</option>
+      <option value="100歳以上">100歳以上</option>
     </select>
   </div>
 
@@ -26,7 +35,7 @@
     <label for="searchYear">検索したい年代:</label>
     <select id="searchYear">
       <option value="">選択してください</option>
-      <!-- 1900年から2024年までのオプションを動的に生成 -->
+      <!-- 1900年から2024年までの選択肢 -->
     </select>
   </div>
 
@@ -45,25 +54,19 @@
   </div>
 
   <script>
-    // 年代のオプションを生成
-    const generationSelect = document.getElementById('generation');
+    // 年代の選択肢を生成（1900〜2024）
     const searchYearSelect = document.getElementById('searchYear');
     for (let year = 1900; year <= 2024; year++) {
-      const option1 = document.createElement('option');
-      option1.value = year;
-      option1.textContent = year + '年';
-      generationSelect.appendChild(option1);
-
-      const option2 = document.createElement('option');
-      option2.value = year;
-      option2.textContent = year + '年';
-      searchYearSelect.appendChild(option2);
+      const option = document.createElement('option');
+      option.value = year;
+      option.textContent = year + '年';
+      searchYearSelect.appendChild(option);
     }
 
-    // サンプルデータ（実際のデータはサーバーから取得するか、データベースを使用）
+    // サンプルデータ
     const data = {
       "1977": {
-        foods: ["サッポロびん生『黒ラベル』", "ビックリマンチョコレート", "チョコの樹", "チュッパチャプス"],
+        foods: ["サッポロびん生『黒ラベル』", "ビックリマンチョコレート"],
         karaoke: [
           "渚のシンドバッド - ピンク・レディー",
           "青春時代 - 森田公一とトップギャラン",
@@ -73,7 +76,7 @@
         ]
       },
       "2001": {
-        foods: ["毎日骨太MBP", "缶チューハイ", "本格炒め炒飯"],
+        foods: ["毎日骨太MBP", "本格炒め炒飯"],
         karaoke: [
           "Can You Keep A Secret? - 宇多田ヒカル",
           "M - 浜崎あゆみ",
@@ -83,7 +86,7 @@
         ]
       },
       "2024": {
-        foods: ["ライラック - Mrs. GREEN APPLE", "Bling-Bang-Bang-Born - Creepy Nuts", "晩餐歌 - tuki.", "シャルル - バルーン", "サウダージ - ポルノグラフィティ"],
+        foods: ["ライラック - Mrs. GREEN APPLE", "シャルル - バルーン"],
         karaoke: [
           "ライラック - Mrs. GREEN APPLE",
           "怪獣の花唄 - Vaundy",
@@ -95,8 +98,8 @@
     };
 
     document.getElementById('searchBtn').addEventListener('click', () => {
-      const generation = generationSelect.value;
-      const searchYear = searchYearSelect.value;
+      const generation = document.getElementById('generation').value;
+      const searchYear = document.getElementById('searchYear').value;
 
       if (!generation || !searchYear) {
         alert('世代と検索したい年代を選択してください。');
@@ -106,8 +109,6 @@
       const result = data[searchYear];
       const foodList = document.getElementById('foodList');
       const karaokeList = document.getElementById('karaokeList');
-
-      // リストをクリア
       foodList.innerHTML = '';
       karaokeList.innerHTML = '';
 
@@ -117,7 +118,6 @@
           li.textContent = item;
           foodList.appendChild(li);
         });
-
         result.karaoke.forEach(item => {
           const li = document.createElement('li');
           li.textContent = item;
@@ -130,25 +130,22 @@
         karaokeList.appendChild(li.cloneNode(true));
       }
 
-      // ログをサーバーに送信
-      const logData = {
-        generation: generation,
-        searchYear: searchYear,
-        timestamp: new Date().toISOString()
-      };
+      // ログ送信
+      const ts = new Date();
+      const fmt = ts.getFullYear().toString()
+        + String(ts.getMonth()+1).padStart(2,'0')
+        + String(ts.getDate()).padStart(2,'0') + '_'
+        + String(ts.getHours()).padStart(2,'0')
+        + String(ts.getMinutes()).padStart(2,'0')
+        + String(ts.getSeconds()).padStart(2,'0');
 
+      const logData = { generation, searchYear, timestamp: fmt };
       fetch('/log', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: {'Content-Type':'application/json'},
         body: JSON.stringify(logData)
-      })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('ログの保存に失敗しました。');
-        }
-
-::contentReference[oaicite:1]{index=1}
- 
-
+      }).catch(err => console.error('ログ送信エラー:', err));
+    });
+  </script>
+</body>
+</html>
