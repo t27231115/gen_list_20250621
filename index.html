@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>年代別ヒット情報検索</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    label { display: inline-block; width: 150px; }
+    select, button { margin: 5px 0; }
+    #result { margin-top: 20px; }
+    .section { margin-bottom: 20px; }
+  </style>
+</head>
+<body>
+  <h1>年代別ヒット情報検索</h1>
+
+  <div class="section">
+    <label for="generation">あなたの世代:</label>
+    <select id="generation">
+      <option value="">選択してください</option>
+      <!-- 1900年から2024年までのオプションを動的に生成 -->
+    </select>
+  </div>
+
+  <div class="section">
+    <label for="searchYear">検索したい年代:</label>
+    <select id="searchYear">
+      <option value="">選択してください</option>
+      <!-- 1900年から2024年までのオプションを動的に生成 -->
+    </select>
+  </div>
+
+  <button id="searchBtn">検索</button>
+
+  <div id="result">
+    <h2>検索結果</h2>
+    <div id="foodSection">
+      <h3>ヒット食品</h3>
+      <ul id="foodList"></ul>
+    </div>
+    <div id="karaokeSection">
+      <h3>カラオケランキング（1位～5位）</h3>
+      <ol id="karaokeList"></ol>
+    </div>
+  </div>
+
+  <script>
+    // 年代のオプションを生成
+    const generationSelect = document.getElementById('generation');
+    const searchYearSelect = document.getElementById('searchYear');
+    for (let year = 1900; year <= 2024; year++) {
+      const option1 = document.createElement('option');
+      option1.value = year;
+      option1.textContent = year + '年';
+      generationSelect.appendChild(option1);
+
+      const option2 = document.createElement('option');
+      option2.value = year;
+      option2.textContent = year + '年';
+      searchYearSelect.appendChild(option2);
+    }
+
+    // サンプルデータ（実際のデータはサーバーから取得するか、データベースを使用）
+    const data = {
+      "1977": {
+        foods: ["サッポロびん生『黒ラベル』", "ビックリマンチョコレート", "チョコの樹", "チュッパチャプス"],
+        karaoke: [
+          "渚のシンドバッド - ピンク・レディー",
+          "青春時代 - 森田公一とトップギャラン",
+          "ウォンテッド - ピンク・レディー",
+          "勝手にしやがれ - 沢田研二",
+          "昔の名前で出ています - 小林旭"
+        ]
+      },
+      "2001": {
+        foods: ["毎日骨太MBP", "缶チューハイ", "本格炒め炒飯"],
+        karaoke: [
+          "Can You Keep A Secret? - 宇多田ヒカル",
+          "M - 浜崎あゆみ",
+          "PIECES OF A DREAM - CHEMISTRY",
+          "波乗りジョニー - 桑田佳祐",
+          "恋愛レボリューション21 - モーニング娘。"
+        ]
+      },
+      "2024": {
+        foods: ["ライラック - Mrs. GREEN APPLE", "Bling-Bang-Bang-Born - Creepy Nuts", "晩餐歌 - tuki.", "シャルル - バルーン", "サウダージ - ポルノグラフィティ"],
+        karaoke: [
+          "ライラック - Mrs. GREEN APPLE",
+          "怪獣の花唄 - Vaundy",
+          "残酷な天使のテーゼ - 高橋洋子",
+          "サウダージ - ポルノグラフィティ",
+          "マリーゴールド - あいみょん"
+        ]
+      }
+    };
+
+    document.getElementById('searchBtn').addEventListener('click', () => {
+      const generation = generationSelect.value;
+      const searchYear = searchYearSelect.value;
+
+      if (!generation || !searchYear) {
+        alert('世代と検索したい年代を選択してください。');
+        return;
+      }
+
+      const result = data[searchYear];
+      const foodList = document.getElementById('foodList');
+      const karaokeList = document.getElementById('karaokeList');
+
+      // リストをクリア
+      foodList.innerHTML = '';
+      karaokeList.innerHTML = '';
+
+      if (result) {
+        result.foods.forEach(item => {
+          const li = document.createElement('li');
+          li.textContent = item;
+          foodList.appendChild(li);
+        });
+
+        result.karaoke.forEach(item => {
+          const li = document.createElement('li');
+          li.textContent = item;
+          karaokeList.appendChild(li);
+        });
+      } else {
+        const li = document.createElement('li');
+        li.textContent = 'データが見つかりません。';
+        foodList.appendChild(li);
+        karaokeList.appendChild(li.cloneNode(true));
+      }
+
+      // ログをサーバーに送信
+      const logData = {
+        generation: generation,
+        searchYear: searchYear,
+        timestamp: new Date().toISOString()
+      };
+
+      fetch('/log', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(logData)
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('ログの保存に失敗しました。');
+        }
+
+::contentReference[oaicite:1]{index=1}
+ 
+
