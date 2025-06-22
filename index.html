@@ -2,150 +2,120 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <title>年代別ヒット情報検索</title>
+  <title>食のタイムマシーン</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    label { display: inline-block; width: 150px; }
-    select, button { margin: 5px 0; }
-    #result { margin-top: 20px; }
-    .section { margin-bottom: 20px; }
+    body { font-family: sans-serif; padding: 20px; max-width: 600px; margin: auto; }
+    section { margin-bottom: 20px; }
+    #result, #feedback, #final { display: none; }
+    button { margin: 5px; }
   </style>
 </head>
 <body>
-  <h1>年代別ヒット情報検索</h1>
+  <h1>🌟 食のタイムマシーン</h1>
 
-  <div class="section">
-    <label for="generation">あなたの世代:</label>
-    <select id="generation">
-      <option value="">選択してください</option>
-      <option value="10代">10代</option>
-      <option value="20代">20代</option>
-      <option value="30代">30代</option>
-      <option value="40代">40代</option>
-      <option value="50代">50代</option>
-      <option value="60代">60代</option>
-      <option value="70代">70代</option>
-      <option value="80代">80代</option>
-      <option value="90代">90代</option>
-      <option value="100歳以上">100歳以上</option>
-    </select>
-  </div>
+  <!-- 選択フォーム -->
+  <section id="form">
+    <label>年代：</label>
+    <select id="ageGroup">
+      <option value="5">10歳未満</option>
+      <option value="15">10代</option>
+      <option value="25">20代</option>
+      <option value="35">30代</option>
+      <option value="45">40代</option>
+      <option value="55">50代</option>
+      <option value="65">60代</option>
+      <option value="75">70代</option>
+      <option value="85">80代</option>
+      <option value="95">90代</option>
+      <option value="100">100歳以上</option>
+    </select><br><br>
 
-  <div class="section">
-    <label for="searchYear">検索したい年代:</label>
-    <select id="searchYear">
-      <option value="">選択してください</option>
-      <!-- 1900年から2024年までの選択肢 -->
-    </select>
-  </div>
+    <label>西暦を選んでね：</label>
+    <select id="targetYear"></select><br><br>
 
-  <button id="searchBtn">検索</button>
+    <button onclick="showResult()">送信</button>
+  </section>
 
-  <div id="result">
-    <h2>検索結果</h2>
-    <div id="foodSection">
-      <h3>ヒット食品</h3>
-      <ul id="foodList"></ul>
-    </div>
-    <div id="karaokeSection">
-      <h3>カラオケランキング（1位～5位）</h3>
-      <ol id="karaokeList"></ol>
-    </div>
-  </div>
+  <!-- 結果表示 -->
+  <section id="result">
+    <h2>📅 あなたがその年に出会ったもの</h2>
+    <p id="info"></p>
+    <p id="karaoke"></p>
+    <button onclick="choose('yes')">欲しい！</button>
+    <button onclick="choose('no')">欲しいまではいかないかな</button>
+  </section>
+
+  <!-- フィードバック -->
+  <section id="feedback">
+    <p id="message"></p>
+    <button onclick="goBack()">最初に戻る</button>
+  </section>
 
   <script>
-    // 年代の選択肢を生成（1900〜2024）
-    const searchYearSelect = document.getElementById('searchYear');
-    for (let year = 1900; year <= 2024; year++) {
-      const option = document.createElement('option');
-      option.value = year;
-      option.textContent = year + '年';
-      searchYearSelect.appendChild(option);
+    // データ：1980～2024（サンプル）
+    const foodData = {};
+    const sampleFoods = ["ナタデココ","タピオカミルクティー","チーズタッカルビ","抹茶ラテ","パンケーキ","クロナッツ","バナナスムージー","かき氷専門店","ブリトー","餃子バーガー"];
+    const sampleKara = [
+      ["浪漫飛行","愛は勝つ","おどるポンポコリン"],
+      ["SAY YES","ラブ･ストーリーは突然に","どんなときも。"],
+      ["LOVE LOVE LOVE","Tomorrow never knows","WOW WAR TONIGHT"],
+      ["世界に一つだけの花","花","Everything"],
+      ["花束","Precious","Lovers Again"],
+      ["千の風になって","奏","Story"],
+      ["チェリー","Precious","ultra soul"],
+      ["糸","恋音と雨空","ヒカリノアトリエ"],
+      ["炎","Lemon","まちがいさがし"],
+      ["春よ、来い","翼をください","少年時代"]
+    ];
+    let idx=0;
+    for (let y=1980; y<=2024; y++){
+      foodData[y] = {
+        food: sampleFoods[idx % sampleFoods.length],
+        karaoke: sampleKara[idx % sampleKara.length]
+      };
+      idx++;
     }
 
-    // サンプルデータ
-    const data = {
-      "1977": {
-        foods: ["サッポロびん生『黒ラベル』", "ビックリマンチョコレート"],
-        karaoke: [
-          "渚のシンドバッド - ピンク・レディー",
-          "青春時代 - 森田公一とトップギャラン",
-          "ウォンテッド - ピンク・レディー",
-          "勝手にしやがれ - 沢田研二",
-          "昔の名前で出ています - 小林旭"
-        ]
-      },
-      "2001": {
-        foods: ["毎日骨太MBP", "本格炒め炒飯"],
-        karaoke: [
-          "Can You Keep A Secret? - 宇多田ヒカル",
-          "M - 浜崎あゆみ",
-          "PIECES OF A DREAM - CHEMISTRY",
-          "波乗りジョニー - 桑田佳祐",
-          "恋愛レボリューション21 - モーニング娘。"
-        ]
-      },
-      "2024": {
-        foods: ["ライラック - Mrs. GREEN APPLE", "シャルル - バルーン"],
-        karaoke: [
-          "ライラック - Mrs. GREEN APPLE",
-          "怪獣の花唄 - Vaundy",
-          "残酷な天使のテーゼ - 高橋洋子",
-          "サウダージ - ポルノグラフィティ",
-          "マリーゴールド - あいみょん"
-        ]
-      }
-    };
+    // 年度プルダウン自動生成
+    const yearSelect = document.getElementById("targetYear");
+    for (let y=1980; y<=2024; y++){
+      const opt = document.createElement("option");
+      opt.value = y;
+      opt.textContent = `${y}年`;
+      yearSelect.appendChild(opt);
+    }
 
-    document.getElementById('searchBtn').addEventListener('click', () => {
-      const generation = document.getElementById('generation').value;
-      const searchYear = document.getElementById('searchYear').value;
-
-      if (!generation || !searchYear) {
-        alert('世代と検索したい年代を選択してください。');
+    function showResult(){
+      const age = +document.getElementById("ageGroup").value;
+      const year = +document.getElementById("targetYear").value;
+      const now = new Date().getFullYear();
+      const birth = now - age;
+      const msg = `その年、あなたは ${year - birth} 歳でした。`;
+      const data = foodData[year];
+      if(!data){
+        alert("データがありません。");
         return;
       }
+      document.getElementById("info").textContent = `🍽 流行した食べ物： ${data.food}`;
+      document.getElementById("karaoke").textContent = `🎤 カラオケTOP3： ${data.karaoke.join("／")}`;
+      document.getElementById("form").style.display = "none";
+      document.getElementById("result").style.display = "block";
+    }
 
-      const result = data[searchYear];
-      const foodList = document.getElementById('foodList');
-      const karaokeList = document.getElementById('karaokeList');
-      foodList.innerHTML = '';
-      karaokeList.innerHTML = '';
+    function choose(ans){
+      const message = ans==="yes"
+        ? "ありがとうございます。注文を承りました。"
+        : "承知しました。ぜひ他の年もお楽しみください。";
+      document.getElementById("message").textContent = message;
+      document.getElementById("result").style.display = "none";
+      document.getElementById("feedback").style.display = "block";
+    }
 
-      if (result) {
-        result.foods.forEach(item => {
-          const li = document.createElement('li');
-          li.textContent = item;
-          foodList.appendChild(li);
-        });
-        result.karaoke.forEach(item => {
-          const li = document.createElement('li');
-          li.textContent = item;
-          karaokeList.appendChild(li);
-        });
-      } else {
-        const li = document.createElement('li');
-        li.textContent = 'データが見つかりません。';
-        foodList.appendChild(li);
-        karaokeList.appendChild(li.cloneNode(true));
-      }
-
-      // ログ送信
-      const ts = new Date();
-      const fmt = ts.getFullYear().toString()
-        + String(ts.getMonth()+1).padStart(2,'0')
-        + String(ts.getDate()).padStart(2,'0') + '_'
-        + String(ts.getHours()).padStart(2,'0')
-        + String(ts.getMinutes()).padStart(2,'0')
-        + String(ts.getSeconds()).padStart(2,'0');
-
-      const logData = { generation, searchYear, timestamp: fmt };
-      fetch('/log', {
-        method: 'POST',
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify(logData)
-      }).catch(err => console.error('ログ送信エラー:', err));
-    });
+    function goBack(){
+      document.getElementById("feedback").style.display = "none";
+      document.getElementById("form").style.display = "block";
+    }
   </script>
 </body>
 </html>
